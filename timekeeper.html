@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINESIS // OBSIDIAN_TERMINAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+        
+        :root {
+            --neon-red: #ff0000;
+            --deep-red: #4d0000;
+            --obsidian: #050505;
+            --panel-bg: rgba(10, 10, 10, 0.95);
+        }
+
+        body {
+            background-color: var(--obsidian);
+            color: #e0e0e0;
+            font-family: 'JetBrains Mono', monospace;
+            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+        }
+
+        .kinesis-panel {
+            border: 1px solid var(--deep-red);
+            background: var(--panel-bg);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .kinesis-panel::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, var(--neon-red), transparent);
+        }
+
+        .neon-red-text { text-shadow: 0 0 8px var(--neon-red); color: var(--neon-red); }
+        
+        .btn-kinesis {
+            background: var(--deep-red);
+            border: 1px solid var(--neon-red);
+            color: white;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+
+        .btn-kinesis:hover {
+            background: var(--neon-red);
+            box-shadow: 0 0 15px var(--neon-red);
+            color: black;
+        }
+
+        .status-pill {
+            padding: 2px 10px;
+            font-size: 10px;
+            border: 1px solid #333;
+            background: #000;
+        }
+
+        .scanline {
+            width: 100%; height: 100px; z-index: 99;
+            background: linear-gradient(0deg, rgba(255, 0, 0, 0) 0%, rgba(255, 0, 0, 0.05) 50%, rgba(255, 0, 0, 0) 100%);
+            position: fixed; top: -100px; left: 0; pointer-events: none;
+            animation: scan 6s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: -100px; }
+            100% { top: 100%; }
+        }
+
+        .progress-red {
+            background: var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+    <div class="scanline"></div>
+
+    <div class="max-w-6xl mx-auto">
+        <!-- TOP NAV / SYSTEM STATUS -->
+        <div class="flex flex-wrap justify-between items-end mb-8 border-b border-red-900 pb-4">
+            <div>
+                <h1 class="text-5xl font-black italic tracking-tighter neon-red-text">KINESIS</h1>
+                <div class="flex gap-4 mt-2">
+                    <span class="status-pill text-red-500 border-red-900">CORE_SYNC: ACTIVE</span>
+                    <span class="status-pill text-gray-500 uppercase">Ver: 3.0.RED</span>
+                </div>
+            </div>
+            <div id="clock" class="text-3xl font-bold bg-black px-6 py-2 border border-red-900 neon-red-text">00:00:00</div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8">
+            <!-- MAIN TIMEKEEPER UNIT -->
+            <div class="col-span-12 lg:col-span-9 space-y-6">
+                <div class="kinesis-panel p-8">
+                    <div class="flex justify-between items-center mb-10">
+                        <div>
+                            <span class="text-xs text-red-700 uppercase tracking-[0.3em] font-bold">Session Uptime</span>
+                            <div id="tkDisplay" class="text-8xl md:text-9xl font-black tracking-tighter text-white">00:00:00</div>
+                        </div>
+                        <div class="hidden md:block text-right">
+                            <div class="w-24 h-24 rounded-full border-4 border-red-900 border-t-red-500 animate-spin flex items-center justify-center">
+                                <span class="text-[10px] text-red-500">LIVE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-8">
+                            <select id="tkProject" class="w-full bg-black border border-red-900 p-4 text-white uppercase font-bold tracking-widest outline-none focus:border-red-500">
+                                <option value="">[SELECT_DATA_STREAM]</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-4 flex gap-2">
+                            <button id="tkStart" class="btn-kinesis flex-1 py-4">INITIATE</button>
+                            <button id="tkStop" class="btn-kinesis flex-1 py-4 bg-black border-gray-800">ABORT</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS GRID -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="kinesis-panel p-6">
+                        <span class="text-[10px] text-red-900 uppercase font-bold">Total Velocity</span>
+                        <div id="totalLogged" class="text-4xl font-bold mt-2">0H 0M</div>
+                    </div>
+                    <div class="kinesis-panel p-6 col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] text-red-900 uppercase font-bold">Weekly Quota Efficiency</span>
+                            <span class="text-xs text-white">TARGET: 40H</span>
+                        </div>
+                        <div class="w-full bg-red-950 h-2">
+                            <div id="goalProgress" class="progress-red h-full w-0 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SYSTEM LOGS / SIDEBAR -->
+            <div class="col-span-12 lg:col-span-3 space-y-6">
+                <div class="kinesis-panel p-4 h-[300px] flex flex-col">
+                    <h3 class="text-xs font-bold text-red-500 mb-4 border-b border-red-900 pb-2">DATA_LOG_V3</h3>
+                    <div id="tkLogs" class="space-y-4 overflow-y-auto flex-1 custom-scrollbar text-[11px]">
+                        <!-- LOGS -->
+                    </div>
+                </div>
+
+                <div class="kinesis-panel p-4 h-[250px] flex flex-col">
+                    <h3 class="text-xs font-bold text-red-500 mb-4 border-b border-red-900 pb-2">STREAM_REGISTRY</h3>
+                    <div class="flex gap-1 mb-4">
+                        <input id="projInput" type="text" placeholder="NEW_ID..." class="bg-black border border-red-900 p-2 text-[10px] flex-1 text-white outline-none">
+                        <button id="addProj" class="bg-red-600 text-black px-3 font-bold">+</button>
+                    </div>
+                    <div id="projList" class="space-y-1 overflow-y-auto flex-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        let projects = [], sessions = [];
+        let tkInterval, tkStartTime, tkElapsed = 0, isTracking = false;
+
+        function formatTime(s) {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = s % 60;
+            return [h, m, sec].map(v => v.toString().padStart(2, '0')).join(':');
+        }
+
+        function saveData() {
+            localStorage.setItem('KN_Projects_Red', JSON.stringify(projects));
+            localStorage.setItem('KN_Sessions_Red', JSON.stringify(sessions));
+        }
+
+        function loadData() {
+            projects = JSON.parse(localStorage.getItem('KN_Projects_Red')) || [];
+            sessions = JSON.parse(localStorage.getItem('KN_Sessions_Red')) || [];
+            renderProjects();
+            renderTKLogs();
+            calculateStats();
+            syncDropdown();
+        }
+
+        setInterval(() => { $('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
+
+        $('addProj').onclick = () => {
+            const name = $('projInput').value;
+            if (!name) return;
+            projects.push({ id: Date.now(), name: name.toUpperCase() });
+            $('projInput').value = '';
+            saveData(); renderProjects(); syncDropdown();
+        };
+
+        function renderProjects() {
+            const list = $('projList'); list.innerHTML = '';
+            projects.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center text-[10px] bg-black p-2 border border-red-950";
+                div.innerHTML = `<span class="text-gray-400">${p.name}</span><button onclick="delProj(${p.id})" class="text-red-700 hover:text-red-400">DEL</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        window.delProj = id => { projects = projects.filter(p => p.id !== id); saveData(); renderProjects(); syncDropdown(); };
+
+        function syncDropdown() {
+            const sel = $('tkProject');
+            sel.innerHTML = '<option value="">[SELECT_DATA_STREAM]</option>';
+            projects.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id; opt.textContent = p.name; sel.appendChild(opt);
+            });
+        }
+
+        $('tkStart').onclick = () => {
+            if (isTracking || !$('tkProject').value) return;
+            isTracking = true;
+            tkStartTime = Date.now() - tkElapsed;
+            tkInterval = setInterval(() => {
+                tkElapsed = Date.now() - tkStartTime;
+                $('tkDisplay').textContent = formatTime(Math.floor(tkElapsed / 1000));
+            }, 1000);
+            $('tkDisplay').classList.add('neon-red-text');
+        };
+
+        $('tkStop').onclick = () => {
+            if (!isTracking) return;
+            clearInterval(tkInterval);
+            sessions.push({ id: Date.now(), projectId: parseInt($('tkProject').value), duration: tkElapsed, timestamp: new Date().toISOString() });
+            isTracking = false; tkElapsed = 0;
+            $('tkDisplay').textContent = "00:00:00";
+            $('tkDisplay').classList.remove('neon-red-text');
+            saveData(); renderTKLogs(); calculateStats();
+        };
+
+        function renderTKLogs() {
+            const container = $('tkLogs'); container.innerHTML = '';
+            sessions.slice(-10).reverse().forEach(s => {
+                const p = projects.find(proj => proj.id === s.projectId);
+                const div = document.createElement('div');
+                div.className = "p-2 border-l-2 border-red-900 bg-black/40";
+                div.innerHTML = `
+                    <div class="flex justify-between text-red-500 font-bold">
+                        <span>${p ? p.name : 'UNKNOWN'}</span>
+                        <span>${formatTime(Math.floor(s.duration/1000))}</span>
+                    </div>
+                    <div class="text-[9px] text-gray-600 mt-1">${new Date(s.timestamp).toLocaleString()}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function calculateStats() {
+            const totalMs = sessions.reduce((acc, s) => acc + s.duration, 0);
+            const hrs = totalMs / 3600000;
+            $('totalLogged').textContent = `${Math.floor(hrs)}H ${Math.floor((hrs % 1) * 60)}M`;
+            $('goalProgress').style.width = `${Math.min((hrs / 40) * 100, 100)}%`;
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
