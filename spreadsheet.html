@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINESIS | Data-Processor</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0f0f0f;
+            --accent: #ff0033;
+            --accent-dim: #4d000f;
+            --text: #e0e0e0;
+            --border: #222;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- NAV --- */
+        nav {
+            height: 50px;
+            background: #000;
+            border-bottom: 1px solid var(--accent-dim);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- SPREADSHEET SECTION --- */
+        .sheet-container {
+            flex: 1;
+            overflow: auto;
+            border-bottom: 2px solid var(--accent);
+            background: var(--bg);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th {
+            background: var(--surface);
+            color: var(--accent);
+            border: 1px solid var(--border);
+            padding: 8px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            border: 1px solid var(--border);
+            padding: 0;
+        }
+
+        td input {
+            width: 100%;
+            height: 35px;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 0 10px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        td input:focus {
+            background: rgba(255, 0, 51, 0.1);
+            border: 1px solid var(--accent);
+        }
+
+        /* --- NOTEPAD SECTION --- */
+        .note-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #080808;
+        }
+
+        .note-header {
+            background: var(--surface);
+            padding: 5px 20px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #bbb;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            outline: none;
+            resize: none;
+        }
+
+        /* --- TOOLBAR --- */
+        .toolbar {
+            height: 40px;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 20px;
+        }
+
+        .tool-btn {
+            background: transparent;
+            border: 1px solid var(--accent-dim);
+            color: var(--text);
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="back-btn">← Back to Mainframe</a>
+        <div style="color: var(--accent); font-weight: 900; letter-spacing: 2px;">KINESIS // PROCESSOR</div>
+        <div style="font-size: 0.6rem; color: #444;">V1.0_STABLE</div>
+    </nav>
+
+    <div class="toolbar">
+        <button class="tool-btn" onclick="addRow()">+ Add Row</button>
+        <button class="tool-btn" onclick="exportData()">Download Data</button>
+        <span style="color: #333; font-size: 0.7rem;">| MODE: HYBRID_SYNC</span>
+    </div>
+
+    <!-- Spreadsheet -->
+    <div class="sheet-container">
+        <table id="dataGrid">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Entry Name</th>
+                    <th>Value (X)</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be injected here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Notepad -->
+    <div class="note-container">
+        <div class="note-header">System Notes / Documentation</div>
+        <textarea placeholder="Initialize decentralized thoughts here..."></textarea>
+    </div>
+
+    <script>
+        // Generate initial rows
+        const tableBody = document.querySelector('#dataGrid tbody');
+        
+        function addRow() {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="00"></td>
+                <td><input type="text" placeholder="Entry..."></td>
+                <td><input type="text" placeholder="0.00"></td>
+                <td><input type="text" placeholder="Logic"></td>
+                <td><input type="text" placeholder="Active"></td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        // Initialize with 10 rows
+        for(let i=0; i<10; i++) {
+            addRow();
+        }
+
+        function exportData() {
+            alert("System: Data structure compiled. Ready for export.");
+        }
+    </script>
+</body>
+</html>
